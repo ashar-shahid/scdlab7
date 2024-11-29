@@ -1,0 +1,97 @@
+//ROLL NO: 2022F-BSE-104
+package scdlab7;
+
+class ExamTimer {
+    private int timeRemaining;
+
+    public ExamTimer(int duration) {
+        this.timeRemaining = duration;
+    }
+
+    public synchronized void updateTime(int decrement) {
+        if (timeRemaining > 0) {
+            timeRemaining -= decrement;
+            System.out.println("Time remaining: " + timeRemaining + " seconds");
+        }
+    }
+
+    public synchronized int getTimeRemaining() {
+        return timeRemaining;
+    }
+}
+
+class Student extends Thread {
+    private int studentId;
+    private ExamTimer examTimer;
+    private int score;
+
+    public Student(int studentId, ExamTimer examTimer) {
+        this.studentId = studentId;
+        this.examTimer = examTimer;
+        this.score = 0;
+    }
+
+    @Override
+    public void run() {
+        try {
+            while (examTimer.getTimeRemaining() > 0) {
+                Thread.sleep(1000); 
+                submitAnswer(); 
+                examTimer.updateTime(1); 
+            }
+            System.out.println("Student " + studentId + " has completed the exam.");
+            calculateScore();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void submitAnswer() {
+        if (Math.random() > 0.5) {
+            score += 1;
+        }
+    }
+
+    private void calculateScore() {
+        System.out.println("Student " + studentId + "'s final score: " + score);
+    }
+}
+
+public class OnlineExaminationSystem {
+
+    public static void main(String[] args) {
+        ExamTimer examTimer = new ExamTimer(60);
+
+        Student student1 = new Student(1, examTimer);
+        Student student2 = new Student(2, examTimer);
+        Student student3 = new Student(3, examTimer);
+        Student student4 = new Student(4, examTimer);
+        Student student5 = new Student(5, examTimer);
+
+        student1.start();
+        student2.start();
+        student3.start();
+        student4.start();
+        student5.start();
+
+        try {
+            while (examTimer.getTimeRemaining() > 0) {
+                Thread.sleep(1000);  
+                examTimer.updateTime(1);  
+            }
+
+            System.out.println("Exam is over. Final results are being processed...");
+
+            student1.join();
+            student2.join();
+            student3.join();
+            student4.join();
+            student5.join();
+
+            System.out.println("All students have completed the exam.");
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
